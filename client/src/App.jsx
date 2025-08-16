@@ -11,12 +11,25 @@ const App = () => {
     setSelectedFile(file);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!selectedFile) {
       alert('Please upload a resume first');
       return;
     }
-    console.log('Generating analysis...');
+
+    const formData = new FormData();
+    formData.append("resume", selectedFile);
+
+    try{
+      const response = await fetch("http://localhost:3000/upload", {
+        method: "POST",
+        body: formData, 
+      });
+      console.log("Upload success:", response.data);
+    }catch(err){
+      console.log("upload error: ",err);
+    }
+    
   };
 
   const toggleDarkMode = () => {
