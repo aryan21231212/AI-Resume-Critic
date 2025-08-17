@@ -25,7 +25,7 @@ const App = () => {
     formData.append("jobDescription", jobDescription);
 
     try {
-      const response = await fetch("http://localhost:3000/analyze", {
+      const response = await fetch("https://ai-resume-critic.onrender.com/analyze", {
         method: "POST",
         body: formData, 
       });
