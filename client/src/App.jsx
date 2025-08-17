@@ -19,13 +19,15 @@ const App = () => {
 
     const formData = new FormData();
     formData.append("resume", selectedFile);
+    formData.append("jobDescription",jobDescription);
 
     try{
-      const response = await fetch("http://localhost:3000/upload", {
+      const response = await fetch("http://localhost:3000/analyze", {
         method: "POST",
         body: formData, 
       });
-      console.log("Upload success:", response.data);
+      const data = await response.json();
+      console.log("Upload success:", data.analysis);
     }catch(err){
       console.log("upload error: ",err);
     }
