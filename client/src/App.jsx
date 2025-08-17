@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Zap, CheckCircle, Moon, Sun } from 'lucide-react';
+import { Upload, FileText, Zap, CheckCircle, Moon, Sun, Loader2 } from 'lucide-react';
 
 const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
   const [darkMode, setDarkMode] = useState(false);
-  const [result, setresult] = useState({});
+  const [result, setResult] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -18,22 +19,24 @@ const App = () => {
       return;
     }
 
+    setIsLoading(true);
     const formData = new FormData();
     formData.append("resume", selectedFile);
-    formData.append("jobDescription",jobDescription);
+    formData.append("jobDescription", jobDescription);
 
-    try{
+    try {
       const response = await fetch("http://localhost:3000/analyze", {
         method: "POST",
         body: formData, 
       });
       const data = await response.json();
-      console.log("Upload success:", data.analysis);
-      setresult(data.analysis);
-    }catch(err){
-      console.log("upload error: ",err);
+      setResult(data.analysis);
+    } catch (err) {
+      console.log("upload error: ", err);
+      alert('Error analyzing resume. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-    
   };
 
   const toggleDarkMode = () => {
@@ -64,54 +67,117 @@ const App = () => {
           </div>
         </header>
 
-        {!result.overallScore?<section className={`hero-section ${darkMode ? 'dark-mode' : ''}`}>
-          <div className="hero-content">
-            <h2 className="hero-title">Get Instant AI-Powered Resume Feedback</h2>
-            <p className="hero-subtitle">
-              Upload your resume and receive personalized suggestions to improve your chances of landing that dream job!
-            </p>
-            <p className="hero-description">
-              Our AI analyzes your resume against industry standards and best practices.
-            </p>
-
-            <div className="features-grid">
-              <div className="feature-item">
-                <div className="feature-icon blue">
-                  <Zap size={32} />
-                </div>
-                <h3 className="feature-title">Instant Analysis</h3>
-                <p className="feature-text">Get feedback in seconds, not days</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon green">
-                  <CheckCircle size={32} />
-                </div>
-                <h3 className="feature-title">Expert Insights</h3>
-                <p className="feature-text">AI trained on thousands of successful resumes</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon purple">
-                  <FileText size={32} />
-                </div>
-                <h3 className="feature-title">ATS Optimization</h3>
-                <p className="feature-text">Ensure your resume passes screening systems</p>
+        {isLoading ? (
+          <div className="loading-container">
+            <Loader2 className="loading-icon" size={48} />
+            <p>Analyzing your resume...</p>
+          </div>
+        ) : result.overallScore ? (
+          <section className={`result-section ${darkMode ? 'dark-mode' : ''}`}>
+            <h2 className="result-title">Analysis Result</h2>
+            <div className="result-score">
+              <div className="score-circle">
+                <span>{result.overallScore}</span>
+                <small>Overall Score</small>
               </div>
             </div>
-          </div>
-        </section>:<>
-                <div>
-                    <h2 className="result-title">Analysis Result</h2>
-                      <p>overallScore:{result.overallScore} </p>
-                      <p>summary:{result.summary} </p> 
-                      <p>strengths:{result.strengths} </p> 
-                      <p>weaknesses:{result.weaknesses} </p>   
-                      <p>missingSkills:{result.missingSkills} </p> 
-                      <p>suggestions:{result.suggestions} </p>  
-                      <p>actionItems: {result.actionItems}</p>  
-                </div>
-        </>}
+            
+            <div className="result-summary">
+              <h3>Summary</h3>
+              <p>{result.summary}</p>
+            </div>
+            
+            <div className="result-grid">
+              <div className="result-card strengths">
+                <h3>Strengths</h3>
+                <ul>
+                  {result.strengths?.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="result-card weaknesses">
+                <h3>Areas for Improvement</h3>
+                <ul>
+                  {result.weaknesses?.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="result-card missing">
+                <h3>Missing Skills</h3>
+                <ul>
+                  {result.missingSkills?.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="result-card suggestions">
+                <h3>Suggestions</h3>
+                <ul>
+                  {result.suggestions?.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            <div className="result-actions">
+              <h3>Action Items</h3>
+              <ol>
+                {result.actionItems?.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ol>
+            </div>
+            
+            <button 
+              className={`new-analysis-btn ${darkMode ? 'dark-mode' : ''}`}
+              onClick={() => setResult({})}
+            >
+              Analyze Another Resume
+            </button>
+          </section>
+        ) : (
+          <section className={`hero-section ${darkMode ? 'dark-mode' : ''}`}>
+            <div className="hero-content">
+              <h2 className="hero-title">Get Instant AI-Powered Resume Feedback</h2>
+              <p className="hero-subtitle">
+                Upload your resume and receive personalized suggestions to improve your chances of landing that dream job!
+              </p>
+              <p className="hero-description">
+                Our AI analyzes your resume against industry standards and best practices.
+              </p>
 
-        
+              <div className="features-grid">
+                <div className="feature-item">
+                  <div className="feature-icon blue">
+                    <Zap size={32} />
+                  </div>
+                  <h3 className="feature-title">Instant Analysis</h3>
+                  <p className="feature-text">Get feedback in seconds, not days</p>
+                </div>
+                <div className="feature-item">
+                  <div className="feature-icon green">
+                    <CheckCircle size={32} />
+                  </div>
+                  <h3 className="feature-title">Expert Insights</h3>
+                  <p className="feature-text">AI trained on thousands of successful resumes</p>
+                </div>
+                <div className="feature-item">
+                  <div className="feature-icon purple">
+                    <FileText size={32} />
+                  </div>
+                  <h3 className="feature-title">ATS Optimization</h3>
+                  <p className="feature-text">Ensure your resume passes screening systems</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className={`upload-section ${darkMode ? 'dark-mode' : ''}`}>
           <div className="upload-container">
@@ -162,10 +228,19 @@ const App = () => {
 
               <button
                 onClick={handleGenerate}
-                disabled={!selectedFile}
-                className={`generate-btn ${selectedFile ? 'enabled' : 'disabled'} ${darkMode ? 'dark-mode' : ''}`}
+                disabled={!selectedFile || isLoading}
+                className={`generate-btn ${selectedFile && !isLoading ? 'enabled' : 'disabled'} ${darkMode ? 'dark-mode' : ''}`}
               >
-                {selectedFile ? 'Analyze My Resume' : 'Upload Resume First'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="loading-icon-btn" size={18} />
+                    Analyzing...
+                  </>
+                ) : selectedFile ? (
+                  'Analyze My Resume'
+                ) : (
+                  'Upload Resume First'
+                )}
               </button>
             </div>
 
@@ -181,7 +256,7 @@ const App = () => {
           </div>
         </footer>
       </div>
-    </div>
+      </div>
   );
 };
 
