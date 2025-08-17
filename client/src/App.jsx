@@ -5,6 +5,7 @@ const App = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [result, setresult] = useState({});
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -28,6 +29,7 @@ const App = () => {
       });
       const data = await response.json();
       console.log("Upload success:", data.analysis);
+      setresult(data.analysis);
     }catch(err){
       console.log("upload error: ",err);
     }
@@ -62,7 +64,7 @@ const App = () => {
           </div>
         </header>
 
-        <section className={`hero-section ${darkMode ? 'dark-mode' : ''}`}>
+        {!result.overallScore?<section className={`hero-section ${darkMode ? 'dark-mode' : ''}`}>
           <div className="hero-content">
             <h2 className="hero-title">Get Instant AI-Powered Resume Feedback</h2>
             <p className="hero-subtitle">
@@ -96,7 +98,20 @@ const App = () => {
               </div>
             </div>
           </div>
-        </section>
+        </section>:<>
+                <div>
+                    <h2 className="result-title">Analysis Result</h2>
+                      <p>overallScore:{result.overallScore} </p>
+                      <p>summary:{result.summary} </p> 
+                      <p>strengths:{result.strengths} </p> 
+                      <p>weaknesses:{result.weaknesses} </p>   
+                      <p>missingSkills:{result.missingSkills} </p> 
+                      <p>suggestions:{result.suggestions} </p>  
+                      <p>actionItems: {result.actionItems}</p>  
+                </div>
+        </>}
+
+        
 
         <section className={`upload-section ${darkMode ? 'dark-mode' : ''}`}>
           <div className="upload-container">
